@@ -1,0 +1,18 @@
+language: generic 
+sudo: required
+services:
+  - docker 
+before_install:
+  - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+  - docker build -t c4fu/react-test -f ./client/Dockerfile.dev ./client
+script:
+  - docker run -e CI=true c4fu/react-test npm run test -- --coverage
+after_success:
+  - docker build -t c4fu/multi-client ./client
+  - docker build -t c4fu/multi-nginx ./nginx
+  - docker build -t c4fu/multi-server ./server
+  - docker build -t c4fu/multi-worker ./worker
+  - docker push c4fu/multi-client
+  - docker push c4fu/multi-nginx 
+  - docker push c4fu/multi-server
+  - docker push c4fu/multi-worker
